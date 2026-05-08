@@ -30,7 +30,15 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         // had to allow these swagger paths explicitly,
                         // was getting 401 on swagger ui without this
-                        .requestMatchers("/api/v1/auth/**", "/swagger-ui/**", "/v3/api-docs/**").permitAll()
+                        .requestMatchers(
+    "/api/v1/auth/**",
+    "/swagger-ui/**",
+    "/swagger-ui.html",
+    "/v3/api-docs/**",
+    "/v3/api-docs",
+    "/swagger-resources/**",
+    "/webjars/**"
+).permitAll()
                         .anyRequest().authenticated()
                 )
                 .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
