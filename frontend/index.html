@@ -1,0 +1,491 @@
+<!-- Path: /home/prrrssshhh/PROJECTS/primetrade.AI/frontend/index.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Primetrade Task Dashboard</title>
+    <style>
+        :root {
+            --primary: #2563eb;
+            --danger: #dc2626;
+            --success: #15803d;
+            --border: #e5e7eb;
+            --bg: #f8fafc;
+            --text: #111827;
+        }
+
+        * { box-sizing: border-box; }
+
+        body {
+            margin: 0;
+            background: var(--bg);
+            color: var(--text);
+            font-family: system-ui, sans-serif;
+            padding: 24px;
+        }
+
+        .container {
+            max-width: 960px;
+            margin: 0 auto;
+        }
+
+        .card {
+            background: #fff;
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 16px;
+        }
+
+        h2, h3 { margin-top: 0; }
+
+        .input,
+        .select,
+        .textarea,
+        .btn {
+            width: 100%;
+            border-radius: 8px;
+            border: 1px solid #d1d5db;
+            padding: 10px 12px;
+            font-size: 14px;
+            margin-top: 8px;
+            margin-bottom: 12px;
+        }
+
+        .textarea {
+            min-height: 90px;
+            resize: vertical;
+        }
+
+        .btn {
+            background: var(--primary);
+            color: #fff;
+            border: none;
+            cursor: pointer;
+            font-weight: 600;
+        }
+
+        .btn.danger {
+            background: var(--danger);
+        }
+
+        .muted-link {
+            color: var(--primary);
+            cursor: pointer;
+            text-decoration: underline;
+            font-size: 14px;
+            display: inline-block;
+            margin-top: 6px;
+        }
+
+        .hidden { display: none; }
+
+        .topbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 14px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+
+        th, td {
+            border-bottom: 1px solid var(--border);
+            text-align: left;
+            padding: 10px 8px;
+            font-size: 14px;
+            vertical-align: top;
+        }
+
+        .actions {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .mini-btn {
+            border: none;
+            border-radius: 6px;
+            padding: 6px 10px;
+            cursor: pointer;
+            color: #fff;
+            background: var(--primary);
+            font-size: 12px;
+        }
+
+        .mini-btn.delete { background: var(--danger); }
+
+        #notification {
+            position: fixed;
+            top: 16px;
+            left: 50%;
+            transform: translateX(-50%);
+            padding: 12px 18px;
+            border-radius: 8px;
+            color: #fff;
+            font-weight: 600;
+            z-index: 1000;
+            display: none;
+        }
+
+        #notification.success { background: var(--success); }
+        #notification.error { background: var(--danger); }
+
+        @media (max-width: 700px) {
+            body { padding: 14px; }
+            th, td { font-size: 12px; padding: 8px 6px; }
+        }
+    </style>
+</head>
+<body>
+<div id="notification"></div>
+<div class="container">
+
+    <section id="loginView" class="card">
+        <h2>Sign In</h2>
+        <label>Email Address</label>
+        <input id="loginEmail" class="input" type="email" placeholder="you@example.com" />
+
+        <label>Password</label>
+        <input id="loginPassword" class="input" type="password" placeholder="Password" />
+
+        <button class="btn" onclick="handleLogin()">Sign In</button>
+        <span class="muted-link" onclick="showView('register')">Don't have an account? Register</span>
+    </section>
+
+    <section id="registerView" class="card hidden">
+        <h2>Create Account</h2>
+        <label>Full Name</label>
+        <input id="registerName" class="input" type="text" placeholder="Your full name" />
+
+        <label>Email Address</label>
+        <input id="registerEmail" class="input" type="email" placeholder="you@example.com" />
+
+        <label>Password</label>
+        <input id="registerPassword" class="input" type="password" placeholder="At least 6 chars" />
+
+        <label>Role</label>
+        <select id="registerRole" class="select">
+            <option value="USER">USER</option>
+            <option value="ADMIN">ADMIN</option>
+        </select>
+
+        <button class="btn" onclick="handleRegister()">Create Account</button>
+        <span class="muted-link" onclick="showView('login')">Already have an account? Sign In</span>
+    </section>
+
+    <section id="dashboardView" class="hidden">
+        <div class="topbar card" style="padding: 14px 16px; margin-bottom: 10px;">
+            <strong id="greeting">Hey</strong>
+            <button class="btn danger" style="width: auto; margin: 0; padding: 8px 14px;" onclick="logout()">Logout</button>
+        </div>
+
+        <div class="card">
+            <h3>Your Tasks</h3>
+            <table>
+                <thead>
+                <tr>
+                    <th>Title</th>
+                    <th>Description</th>
+                    <th>Status</th>
+                    <th>Created</th>
+                    <th>Actions</th>
+                </tr>
+                </thead>
+                <tbody id="tasksBody"></tbody>
+            </table>
+        </div>
+
+        <div class="card">
+            <h3 id="taskFormHeading">New Task</h3>
+            <label>Title</label>
+            <input id="taskTitle" class="input" type="text" placeholder="Task title" />
+
+            <label>Description</label>
+            <textarea id="taskDescription" class="textarea" placeholder="Task details"></textarea>
+
+            <label>Status</label>
+            <select id="taskStatus" class="select">
+                <option value="TODO">Todo</option>
+                <option value="IN_PROGRESS">In Progress</option>
+                <option value="DONE">Done</option>
+            </select>
+
+            <button id="taskSubmitBtn" class="btn" onclick="submitTask()">Create Task</button>
+            <button id="taskCancelBtn" class="btn hidden" style="background:#6b7280;" onclick="resetTaskForm()">Cancel Edit</button>
+        </div>
+    </section>
+</div>
+
+<script>
+    const BASE_URL = "http://localhost:8080";
+    const TOKEN_KEY = "jwt_token";
+    const USER_KEY = "user_info";
+
+    let editingTaskId = null;
+    let taskCache = {};
+
+    function showView(view) {
+        document.getElementById("loginView").classList.add("hidden");
+        document.getElementById("registerView").classList.add("hidden");
+        document.getElementById("dashboardView").classList.add("hidden");
+
+        if (view === "login") document.getElementById("loginView").classList.remove("hidden");
+        if (view === "register") document.getElementById("registerView").classList.remove("hidden");
+        if (view === "dashboard") document.getElementById("dashboardView").classList.remove("hidden");
+    }
+
+    const notify = (message, type = "success") => {
+        const bar = document.getElementById("notification");
+        bar.textContent = message;
+        bar.className = type === "error" ? "error" : "success";
+        bar.style.display = "block";
+        setTimeout(() => {
+            bar.style.display = "none";
+        }, 3000);
+    };
+
+    function getToken() {
+        return localStorage.getItem(TOKEN_KEY);
+    }
+
+    function getCurrentUser() {
+        const raw = localStorage.getItem(USER_KEY);
+        if (!raw) return null;
+        try {
+            return JSON.parse(raw);
+        } catch (err) {
+            return null;
+        }
+    }
+
+    async function apiFetch(path, options = {}) {
+        const token = getToken();
+        const headers = options.headers || {};
+
+        if (token) {
+            headers.Authorization = `Bearer ${token}`;
+        }
+
+        if (!(options.body instanceof FormData)) {
+            headers["Content-Type"] = "application/json";
+        }
+
+        const response = await fetch(`${BASE_URL}${path}`, {
+            ...options,
+            headers
+        });
+
+        // this was annoying to debug, fetch doesnt
+        // throw on 4xx so need to check response.ok manually
+        if (response.status === 401) {
+            logout(true);
+            throw new Error("Session expired. Please sign in again.");
+        }
+
+        const contentType = response.headers.get("content-type") || "";
+        let data = null;
+        if (contentType.includes("application/json")) {
+            data = await response.json();
+        }
+
+        if (!response.ok) {
+            const msg = data?.message || "Something went wrong";
+            throw new Error(msg);
+        }
+
+        return data;
+    }
+
+    async function handleRegister() {
+        const payload = {
+            name: document.getElementById("registerName").value.trim(),
+            email: document.getElementById("registerEmail").value.trim(),
+            password: document.getElementById("registerPassword").value,
+            role: document.getElementById("registerRole").value
+        };
+
+        // TODO: add loading spinner here
+        try {
+            const data = await apiFetch("/api/v1/auth/register", {
+                method: "POST",
+                body: JSON.stringify(payload)
+            });
+            localStorage.setItem(TOKEN_KEY, data.token);
+            localStorage.setItem(USER_KEY, JSON.stringify(data));
+            notify("Registered successfully");
+            loadDashboard();
+        } catch (err) {
+            notify(err.message, "error");
+        }
+    }
+
+    async function handleLogin() {
+        const payload = {
+            email: document.getElementById("loginEmail").value.trim(),
+            password: document.getElementById("loginPassword").value
+        };
+
+        try {
+            const data = await apiFetch("/api/v1/auth/login", {
+                method: "POST",
+                body: JSON.stringify(payload)
+            });
+            console.log("login response:", data)
+            localStorage.setItem(TOKEN_KEY, data.token);
+            localStorage.setItem(USER_KEY, JSON.stringify(data));
+            notify("Login successful");
+            loadDashboard();
+        } catch (err) {
+            notify(err.message, "error");
+        }
+    }
+
+    async function loadTasks() {
+        try {
+            const tasks = await apiFetch("/api/v1/tasks");
+            const tbody = document.getElementById("tasksBody");
+            tbody.innerHTML = "";
+
+            if (!tasks || tasks.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="5">No tasks yet</td></tr>`;
+                return;
+            }
+
+            taskCache = {};
+            tasks.forEach((task) => {
+                taskCache[task.id] = task;
+                const row = document.createElement("tr");
+                row.innerHTML = `
+                    <td>${escapeHtml(task.title || "")}</td>
+                    <td>${escapeHtml(task.description || "-")}</td>
+                    <td>${task.status || "TODO"}</td>
+                    <td>${task.createdAt ? new Date(task.createdAt).toLocaleString() : "-"}</td>
+                    <td>
+                        <div class="actions">
+                            <button class="mini-btn" onclick='startEditTaskById(${task.id})'>Edit</button>
+                            <button class="mini-btn delete" onclick='deleteTask(${task.id})'>Delete</button>
+                        </div>
+                    </td>
+                `;
+                tbody.appendChild(row);
+            });
+        } catch (err) {
+            notify(err.message, "error");
+        }
+    }
+
+    function startEditTaskById(taskId) {
+        const task = taskCache[taskId];
+        if (!task) {
+            notify("Task data not found for editing", "error");
+            return;
+        }
+        editingTaskId = task.id;
+        document.getElementById("taskTitle").value = task.title || "";
+        document.getElementById("taskDescription").value = task.description || "";
+        document.getElementById("taskStatus").value = task.status || "TODO";
+        document.getElementById("taskSubmitBtn").textContent = "Update";
+        document.getElementById("taskCancelBtn").classList.remove("hidden");
+        document.getElementById("taskFormHeading").textContent = "Edit Task";
+    }
+
+    function resetTaskForm() {
+        editingTaskId = null;
+        document.getElementById("taskTitle").value = "";
+        document.getElementById("taskDescription").value = "";
+        document.getElementById("taskStatus").value = "TODO";
+        document.getElementById("taskSubmitBtn").textContent = "Create Task";
+        document.getElementById("taskCancelBtn").classList.add("hidden");
+        document.getElementById("taskFormHeading").textContent = "New Task";
+    }
+
+    async function submitTask() {
+        const payload = {
+            title: document.getElementById("taskTitle").value.trim(),
+            description: document.getElementById("taskDescription").value.trim(),
+            status: document.getElementById("taskStatus").value
+        };
+
+        if (!payload.title) {
+            notify("Title is required", "error");
+            return;
+        }
+
+        try {
+            if (editingTaskId) {
+                await apiFetch(`/api/v1/tasks/${editingTaskId}`, {
+                    method: "PUT",
+                    body: JSON.stringify(payload)
+                });
+                notify("Task updated");
+            } else {
+                await apiFetch("/api/v1/tasks", {
+                    method: "POST",
+                    body: JSON.stringify(payload)
+                });
+                notify("Task created");
+            }
+            resetTaskForm();
+            await loadTasks();
+        } catch (err) {
+            notify(err.message, "error");
+        }
+    }
+
+    async function deleteTask(taskId) {
+        if (!window.confirm("Delete this task?")) {
+            return;
+        }
+
+        try {
+            await apiFetch(`/api/v1/tasks/${taskId}`, { method: "DELETE" });
+            notify("Task deleted");
+            await loadTasks();
+        } catch (err) {
+            notify(err.message, "error");
+        }
+    }
+
+    function escapeHtml(value) {
+        const text = String(value);
+        return text
+            .replaceAll("&", "&amp;")
+            .replaceAll("<", "&lt;")
+            .replaceAll(">", "&gt;")
+            .replaceAll('"', "&quot;")
+            .replaceAll("'", "&#39;");
+    }
+
+    function logout(isAuto = false) {
+        localStorage.removeItem(TOKEN_KEY);
+        localStorage.removeItem(USER_KEY);
+        resetTaskForm();
+        showView("login");
+        if (!isAuto) notify("Logged out");
+    }
+
+    function loadDashboard() {
+        const user = getCurrentUser();
+        const name = user?.name || "there";
+        document.getElementById("greeting").textContent = `Hey, ${name}`;
+        showView("dashboard");
+        loadTasks();
+    }
+
+    (function init() {
+        const token = getToken();
+        if (token) {
+            loadDashboard();
+        } else {
+            showView("login");
+        }
+    })();
+</script>
+</body>
+</html>

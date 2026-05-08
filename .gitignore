@@ -1,0 +1,14 @@
+# Path: /home/prrrssshhh/PROJECTS/primetrade.AI/.gitignore
+target/
+*.class
+*.jar
+*.war
+.env
+application-prod.properties
+.idea/
+*.iml
+.DS_Store
+*.log
+mvnw
+mvnw.cmd
+.mvn/
